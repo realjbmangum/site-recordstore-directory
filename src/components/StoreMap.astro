@@ -1,0 +1,216 @@
+---
+import type { Store } from '../lib/supabase';
+
+interface Props {
+  stores: Store[];
+  height?: string;
+}
+
+const { stores, height = '600px' } = Astro.props;
+
+// Filter stores that have coordinates
+const storesWithCoords = stores.filter(
+  (store) => store.latitude && store.longitude
+);
+
+// Calculate center point (average of all coordinates)
+const center = storesWithCoords.length > 0
+  ? {
+      lng: storesWithCoords.reduce((sum, s) => sum + (s.longitude || 0), 0) / storesWithCoords.length,
+      lat: storesWithCoords.reduce((sum, s) => sum + (s.latitude || 0), 0) / storesWithCoords.length,
+    }
+  : { lng: -98.5795, lat: 39.8283 }; // Center of US as default
+
+// Prepare store data for the map (client-side)
+const mapStores = storesWithCoords.map((store) => ({
+  id: store.id,
+  name: store.name,
+  slug: store.slug,
+  city: store.city,
+  state: store.state,
+  lat: store.latitude,
+  lng: store.longitude,
+  genres: store.genres?.slice(0, 3) || [],
+  photo_url: store.photo_urls?.[0] || null,
+  verified: store.verified,
+}));
+---
+
+<div class="store-map-container relative rounded-xl overflow-hidden border border-ink-200 bg-ink-100">
+  <div id="store-map" style={`height: ${height}; width: 100%;`}></div>
+
+  <!-- Loading state -->
+  <div id="map-loading" class="absolute inset-0 flex items-center justify-center bg-ink-100">
+    <div class="flex flex-col items-center gap-3">
+      <svg class="w-8 h-8 text-groove-500 animate-spin" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+      <span class="text-ink-600 text-sm">Loading map...</span>
+    </div>
+  </div>
+
+  <!-- No stores message -->
+  {storesWithCoords.length === 0 && (
+    <div class="absolute inset-0 flex items-center justify-center bg-ink-50">
+      <div class="text-center">
+        <svg class="w-12 h-12 text-ink-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+        <p class="text-ink-500">No stores with location data</p>
+      </div>
+    </div>
+  )}
+</div>
+
+<!-- Mapbox CSS -->
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css" rel="stylesheet" />
+
+<script define:vars={{ mapStores, center }}>
+  // Load Mapbox GL JS
+  const script = document.createElement('script');
+  script.src = 'https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js';
+  script.onload = initMap;
+  document.head.appendChild(script);
+
+  function initMap() {
+    const mapContainer = document.getElementById('store-map');
+    const loadingEl = document.getElementById('map-loading');
+
+    if (!mapContainer || mapStores.length === 0) {
+      if (loadingEl) loadingEl.style.display = 'none';
+      return;
+    }
+
+    // Get token from meta tag (set by BaseLayout)
+    const tokenMeta = document.querySelector('meta[name="mapbox-token"]');
+    const token = tokenMeta?.getAttribute('content');
+
+    if (!token) {
+      console.warn('Mapbox token not found');
+      if (loadingEl) {
+        loadingEl.innerHTML = `
+          <div class="text-center">
+            <p class="text-ink-500">Map unavailable</p>
+            <p class="text-ink-400 text-sm">Mapbox token not configured</p>
+          </div>
+        `;
+      }
+      return;
+    }
+
+    mapboxgl.accessToken = token;
+
+    const map = new mapboxgl.Map({
+      container: 'store-map',
+      style: 'mapbox://styles/mapbox/light-v11',
+      center: [center.lng, center.lat],
+      zoom: mapStores.length === 1 ? 12 : 3.5,
+    });
+
+    // Add navigation controls
+    map.addControl(new mapboxgl.NavigationControl(), 'top-right');
+
+    map.on('load', () => {
+      if (loadingEl) loadingEl.style.display = 'none';
+
+      // Add markers for each store
+      mapStores.forEach((store) => {
+        // Create custom marker element
+        const el = document.createElement('div');
+        el.className = 'store-marker';
+        el.innerHTML = `
+          <div class="w-8 h-8 bg-groove-500 rounded-full flex items-center justify-center shadow-lg cursor-pointer hover:bg-groove-600 transition-colors border-2 border-white">
+            <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" opacity="0.3"/>
+              <circle cx="12" cy="12" r="4"/>
+            </svg>
+          </div>
+        `;
+
+        // Create popup content
+        const popupContent = `
+          <div class="store-popup" style="min-width: 200px;">
+            ${store.photo_url ? `
+              <div style="width: 100%; height: 120px; overflow: hidden; border-radius: 8px 8px 0 0; margin: -10px -10px 10px -10px; width: calc(100% + 20px);">
+                <img src="${store.photo_url}" alt="${store.name}" style="width: 100%; height: 100%; object-fit: cover;" />
+              </div>
+            ` : ''}
+            <div style="padding: 0;">
+              <h3 style="font-weight: 600; font-size: 16px; margin: 0 0 4px 0; color: #1a1918;">
+                ${store.name}
+                ${store.verified ? '<span style="color: #f97316; margin-left: 4px;">✓</span>' : ''}
+              </h3>
+              <p style="font-size: 14px; color: #5a554f; margin: 0 0 8px 0;">
+                ${store.city}, ${store.state}
+              </p>
+              ${store.genres.length > 0 ? `
+                <div style="display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 10px;">
+                  ${store.genres.map(g => `
+                    <span style="font-size: 11px; padding: 2px 6px; background: #f3e8ff; color: #7e22ce; border-radius: 9999px;">
+                      ${g}
+                    </span>
+                  `).join('')}
+                </div>
+              ` : ''}
+              <a href="/store/${store.slug}"
+                 style="display: inline-block; font-size: 13px; color: #f97316; font-weight: 500; text-decoration: none;">
+                View Details →
+              </a>
+            </div>
+          </div>
+        `;
+
+        // Create popup
+        const popup = new mapboxgl.Popup({
+          offset: 25,
+          closeButton: true,
+          maxWidth: '280px'
+        }).setHTML(popupContent);
+
+        // Add marker to map
+        new mapboxgl.Marker(el)
+          .setLngLat([store.lng, store.lat])
+          .setPopup(popup)
+          .addTo(map);
+      });
+
+      // Fit map to show all markers if more than one
+      if (mapStores.length > 1) {
+        const bounds = new mapboxgl.LngLatBounds();
+        mapStores.forEach((store) => {
+          bounds.extend([store.lng, store.lat]);
+        });
+        map.fitBounds(bounds, { padding: 50, maxZoom: 12 });
+      }
+    });
+  }
+</script>
+
+<style is:global>
+  .mapboxgl-popup-content {
+    padding: 10px !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+  }
+
+  .mapboxgl-popup-close-button {
+    font-size: 18px !important;
+    padding: 4px 8px !important;
+    color: #706b63 !important;
+  }
+
+  .mapboxgl-popup-close-button:hover {
+    background: #f7f7f6 !important;
+    border-radius: 4px;
+  }
+
+  .store-marker {
+    cursor: pointer;
+  }
+
+  .store-marker:hover > div {
+    transform: scale(1.1);
+  }
+</style>

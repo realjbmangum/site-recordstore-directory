@@ -2,6 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import SearchBar from '../../components/SearchBar.astro';
 import StoreGrid from '../../components/StoreGrid.astro';
+import StoreMap from '../../components/StoreMap.astro';
 import { getStores, getStatesWithCounts } from '../../lib/supabase';
 import { stateToSlug } from '../../lib/utils';
 import genres from '../../data/genres.json';
@@ -45,13 +46,39 @@ const title = selectedState
 >
   <div class="container-page py-8 md:py-12">
     <!-- Header -->
-    <div class="mb-8">
-      <h1 class="font-display text-3xl md:text-4xl font-bold text-ink-900 mb-4">
-        {title}
-      </h1>
-      <p class="text-ink-600">
-        {filteredStores.length} stores found
-      </p>
+    <div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h1 class="font-display text-3xl md:text-4xl font-bold text-ink-900 mb-2">
+          {title}
+        </h1>
+        <p class="text-ink-600">
+          {filteredStores.length} stores found
+        </p>
+      </div>
+
+      <!-- View Toggle -->
+      <div class="flex items-center gap-1 bg-ink-100 p-1 rounded-lg">
+        <button
+          id="grid-view-btn"
+          class="view-toggle-btn active flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors"
+          aria-label="Grid view"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+          </svg>
+          <span class="hidden sm:inline">Grid</span>
+        </button>
+        <button
+          id="map-view-btn"
+          class="view-toggle-btn flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors"
+          aria-label="Map view"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+          </svg>
+          <span class="hidden sm:inline">Map</span>
+        </button>
+      </div>
     </div>
 
     <!-- Filters -->
@@ -97,11 +124,18 @@ const title = selectedState
       </div>
     </div>
 
-    <!-- Results -->
-    <StoreGrid
-      stores={filteredStores}
-      emptyMessage="No stores match your filters. Try adjusting your search."
-    />
+    <!-- Results - Grid View -->
+    <div id="grid-view">
+      <StoreGrid
+        stores={filteredStores}
+        emptyMessage="No stores match your filters. Try adjusting your search."
+      />
+    </div>
+
+    <!-- Results - Map View -->
+    <div id="map-view" class="hidden">
+      <StoreMap stores={filteredStores} height="600px" />
+    </div>
 
     <!-- Browse by State -->
     {statesWithCounts.length > 0 && !selectedState && (
@@ -124,6 +158,20 @@ const title = selectedState
     )}
   </div>
 </BaseLayout>
+
+<style>
+  .view-toggle-btn {
+    color: #5a554f;
+  }
+  .view-toggle-btn:hover {
+    color: #1a1918;
+  }
+  .view-toggle-btn.active {
+    background: white;
+    color: #1a1918;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+</style>
 
 <script>
   const stateFilter = document.getElementById('state-filter') as HTMLSelectElement;
@@ -149,4 +197,35 @@ const title = selectedState
 
   stateFilter?.addEventListener('change', updateFilters);
   genreFilter?.addEventListener('change', updateFilters);
+
+  // View toggle functionality
+  const gridViewBtn = document.getElementById('grid-view-btn');
+  const mapViewBtn = document.getElementById('map-view-btn');
+  const gridView = document.getElementById('grid-view');
+  const mapView = document.getElementById('map-view');
+
+  function setView(view: 'grid' | 'map') {
+    if (view === 'grid') {
+      gridView?.classList.remove('hidden');
+      mapView?.classList.add('hidden');
+      gridViewBtn?.classList.add('active');
+      mapViewBtn?.classList.remove('active');
+      localStorage.setItem('stores-view', 'grid');
+    } else {
+      gridView?.classList.add('hidden');
+      mapView?.classList.remove('hidden');
+      gridViewBtn?.classList.remove('active');
+      mapViewBtn?.classList.add('active');
+      localStorage.setItem('stores-view', 'map');
+    }
+  }
+
+  gridViewBtn?.addEventListener('click', () => setView('grid'));
+  mapViewBtn?.addEventListener('click', () => setView('map'));
+
+  // Restore saved view preference
+  const savedView = localStorage.getItem('stores-view') as 'grid' | 'map' | null;
+  if (savedView === 'map') {
+    setView('map');
+  }
 </script>

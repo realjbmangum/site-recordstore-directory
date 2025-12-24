@@ -14,6 +14,9 @@ interface Props {
 }
 
 const { title, description, canonical, ogImage, type, noindex } = Astro.props;
+
+// Mapbox token for maps (loaded from environment variables)
+const mapboxToken = import.meta.env.PUBLIC_MAPBOX_TOKEN || '';
 ---
 
 <!DOCTYPE html>
@@ -39,6 +42,9 @@ const { title, description, canonical, ogImage, type, noindex } = Astro.props;
       type={type}
       noindex={noindex}
     />
+
+    <!-- Mapbox token for map components -->
+    {mapboxToken && <meta name="mapbox-token" content={mapboxToken} />}
   </head>
   <body class="min-h-screen flex flex-col">
     <Header />
