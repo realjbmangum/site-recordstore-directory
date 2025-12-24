@@ -1,0 +1,17 @@
+{
+  "name": "RecordStores",
+  "tagline": "Find your local groove",
+  "domain": "recordstores.com",
+  "description": "The most comprehensive directory of independent record stores. Find vinyl shops, discover new stores, and support your local music scene.",
+  "social": {
+    "instagram": "@recordstorescom",
+    "twitter": "@recordstorescom"
+  },
+  "contact": {
+    "email": "hello@recordstores.com"
+  },
+  "defaults": {
+    "storesPerPage": 24,
+    "featuredCount": 6
+  }
+}

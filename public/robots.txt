@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://recordstores.com/sitemap-index.xml

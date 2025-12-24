@@ -1,0 +1,151 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SearchBar from '../components/SearchBar.astro';
+import StoreGrid from '../components/StoreGrid.astro';
+import { getStores, getStatesWithCounts } from '../lib/supabase';
+import { US_STATES, stateToSlug } from '../lib/utils';
+import siteConfig from '../data/site-config.json';
+import genres from '../data/genres.json';
+
+// Fetch data
+const featuredStores = await getStores({ featured: true, limit: 6 });
+const recentStores = await getStores({ limit: 8 });
+const statesWithCounts = await getStatesWithCounts();
+
+// Use recent if no featured
+const displayStores = featuredStores.length > 0 ? featuredStores : recentStores;
+---
+
+<BaseLayout
+  title={`${siteConfig.name} - ${siteConfig.tagline}`}
+  description={siteConfig.description}
+>
+  <!-- Hero Section -->
+  <section class="bg-gradient-to-b from-ink-950 to-ink-900 text-white">
+    <div class="container-page py-16 md:py-24">
+      <div class="max-w-3xl mx-auto text-center">
+        <h1 class="font-display text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+          Find your local <span class="text-groove-400">groove</span>
+        </h1>
+        <p class="text-lg md:text-xl text-ink-300 mb-8">
+          Discover independent record stores near you. From rare vinyl to local gems, find the perfect shop for your next crate-digging adventure.
+        </p>
+        <div class="max-w-xl mx-auto">
+          <SearchBar size="large" placeholder="Search by city or state..." />
+        </div>
+        <div class="mt-6 flex flex-wrap justify-center gap-2">
+          {genres.slice(0, 6).map((genre) => (
+            <a
+              href={`/stores?genre=${genre.id}`}
+              class="px-3 py-1.5 text-sm font-medium bg-white/10 text-white rounded-full hover:bg-white/20 transition-colors"
+            >
+              {genre.label}
+            </a>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Stores -->
+  <section class="py-12 md:py-16">
+    <div class="container-page">
+      <div class="flex items-center justify-between mb-8">
+        <h2 class="font-display text-2xl md:text-3xl font-bold text-ink-900">
+          {featuredStores.length > 0 ? 'Featured Stores' : 'Recent Additions'}
+        </h2>
+        <a href="/stores" class="btn-ghost text-groove-600 hover:text-groove-700">
+          View all stores
+          <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </a>
+      </div>
+
+      {displayStores.length > 0 ? (
+        <StoreGrid stores={displayStores} />
+      ) : (
+        <div class="text-center py-12 bg-white rounded-xl border border-ink-200">
+          <svg class="w-16 h-16 mx-auto text-ink-300 mb-4" viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="12" cy="12" r="10" fill="currentColor" opacity="0.1"/>
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5" fill="none"/>
+            <circle cx="12" cy="12" r="4" fill="currentColor" opacity="0.3"/>
+            <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+          </svg>
+          <h3 class="font-display text-xl font-semibold text-ink-900 mb-2">No stores yet</h3>
+          <p class="text-ink-500 mb-4">Be the first to add a record store to our directory.</p>
+          <a href="/submit" class="btn-primary">Add a Store</a>
+        </div>
+      )}
+    </div>
+  </section>
+
+  <!-- Browse by State -->
+  {statesWithCounts.length > 0 && (
+    <section class="py-12 md:py-16 bg-white">
+      <div class="container-page">
+        <h2 class="font-display text-2xl md:text-3xl font-bold text-ink-900 mb-8">
+          Browse by State
+        </h2>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+          {statesWithCounts.slice(0, 12).map(({ state, count }) => (
+            <a
+              href={`/stores/${stateToSlug(state)}`}
+              class="flex items-center justify-between px-4 py-3 bg-ink-50 rounded-lg hover:bg-groove-50 hover:text-groove-700 transition-colors group"
+            >
+              <span class="font-medium text-ink-700 group-hover:text-groove-700">{state}</span>
+              <span class="text-sm text-ink-400 group-hover:text-groove-500">{count}</span>
+            </a>
+          ))}
+        </div>
+        {statesWithCounts.length > 12 && (
+          <div class="mt-6 text-center">
+            <a href="/stores" class="btn-secondary">
+              View all states
+            </a>
+          </div>
+        )}
+      </div>
+    </section>
+  )}
+
+  <!-- CTA Section -->
+  <section class="py-12 md:py-16">
+    <div class="container-page">
+      <div class="bg-gradient-to-br from-groove-500 to-groove-600 rounded-2xl p-8 md:p-12 text-center text-white">
+        <h2 class="font-display text-2xl md:text-3xl font-bold mb-4">
+          Know a great record store?
+        </h2>
+        <p class="text-groove-100 mb-6 max-w-xl mx-auto">
+          Help fellow vinyl enthusiasts discover hidden gems. Submit your favorite record store and help grow our community.
+        </p>
+        <a href="/submit" class="inline-flex items-center px-6 py-3 bg-white text-groove-600 font-semibold rounded-lg hover:bg-groove-50 transition-colors">
+          Submit a Store
+          <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section class="py-12 md:py-16 bg-white">
+    <div class="container-page">
+      <div class="max-w-3xl mx-auto text-center">
+        <h2 class="font-display text-2xl md:text-3xl font-bold text-ink-900 mb-4">
+          For vinyl lovers, by vinyl lovers
+        </h2>
+        <p class="text-ink-600 mb-6">
+          {siteConfig.name} is the most comprehensive directory of independent record stores.
+          We're building a community resource to help collectors find stores that match their taste,
+          discover new shops when traveling, and support local music scenes everywhere.
+        </p>
+        <div class="flex flex-wrap justify-center gap-4">
+          <a href="/about" class="btn-secondary">Learn more</a>
+          <a href="/cities" class="btn-ghost text-groove-600">Explore city guides</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

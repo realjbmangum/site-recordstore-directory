@@ -1,0 +1,14 @@
+[
+  { "id": "listening-station", "label": "Listening Station" },
+  { "id": "coffee", "label": "Coffee/Cafe" },
+  { "id": "beer", "label": "Beer/Bar" },
+  { "id": "live-music", "label": "Live Music" },
+  { "id": "dog-friendly", "label": "Dog Friendly" },
+  { "id": "buys-records", "label": "Buys Records" },
+  { "id": "rare-imports", "label": "Rare/Imports" },
+  { "id": "new-vinyl", "label": "New Vinyl" },
+  { "id": "used-vinyl", "label": "Used Vinyl" },
+  { "id": "turntables", "label": "Sells Turntables" },
+  { "id": "cassettes", "label": "Cassettes" },
+  { "id": "cds", "label": "CDs" }
+]

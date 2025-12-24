@@ -1,0 +1,65 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCities, getStatesWithCounts } from '../../lib/supabase';
+import { stateToSlug } from '../../lib/utils';
+
+const cities = await getCities({ limit: 50 });
+const statesWithCounts = await getStatesWithCounts();
+---
+
+<BaseLayout
+  title="City Guides"
+  description="Explore our curated city guides to discover the best record stores in major cities across the United States."
+>
+  <div class="container-page py-8 md:py-12">
+    <h1 class="font-display text-3xl md:text-4xl font-bold text-ink-900 mb-4">
+      City Guides
+    </h1>
+    <p class="text-ink-600 mb-8 max-w-2xl">
+      Explore curated guides to the best record stores in cities across the country. Each guide features top picks, neighborhood breakdowns, and insider tips.
+    </p>
+
+    {cities.length > 0 ? (
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+        {cities.map((city) => (
+          <a
+            href={`/city/${city.slug}`}
+            class="group bg-white rounded-xl border border-ink-200 p-6 hover:border-groove-300 hover:shadow-md transition-all"
+          >
+            <h2 class="font-display text-xl font-semibold text-ink-900 group-hover:text-groove-600 transition-colors mb-1">
+              {city.name}
+            </h2>
+            <p class="text-ink-500 text-sm mb-3">{city.state}</p>
+            <p class="text-groove-600 font-medium">
+              {city.store_count} {city.store_count === 1 ? 'store' : 'stores'}
+            </p>
+          </a>
+        ))}
+      </div>
+    ) : (
+      <div class="text-center py-12 bg-white rounded-xl border border-ink-200 mb-12">
+        <p class="text-ink-500">City guides coming soon! In the meantime, browse stores by state.</p>
+      </div>
+    )}
+
+    <!-- Browse by State -->
+    {statesWithCounts.length > 0 && (
+      <div>
+        <h2 class="font-display text-2xl font-bold text-ink-900 mb-6">
+          Browse by State
+        </h2>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+          {statesWithCounts.map(({ state, count }) => (
+            <a
+              href={`/stores/${stateToSlug(state)}`}
+              class="flex items-center justify-between px-4 py-3 bg-white rounded-lg border border-ink-200 hover:border-groove-300 hover:bg-groove-50 transition-colors group"
+            >
+              <span class="font-medium text-ink-700 group-hover:text-groove-700">{state}</span>
+              <span class="text-sm text-ink-400 group-hover:text-groove-500">{count}</span>
+            </a>
+          ))}
+        </div>
+      </div>
+    )}
+  </div>
+</BaseLayout>

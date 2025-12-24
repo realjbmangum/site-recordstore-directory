@@ -1,4 +1,18 @@
+# Dependencies
 node_modules
+
+# Build output
 dist
-.DS_Store
+.astro
+
+# Environment
 .env
+.env.local
+
+# System
+.DS_Store
+*.log
+
+# IDE
+.vscode
+.idea

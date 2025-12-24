@@ -1,0 +1,72 @@
+---
+import type { Store } from '../lib/supabase';
+
+interface Props {
+  store: Store;
+}
+
+const { store } = Astro.props;
+const photoUrl = store.photo_urls?.[0];
+---
+
+<a
+  href={`/store/${store.slug}`}
+  class="group block bg-white rounded-lg border border-ink-200 overflow-hidden hover:border-groove-300 hover:shadow-md transition-all duration-200"
+>
+  <!-- Image -->
+  <div class="aspect-[4/3] bg-ink-100 overflow-hidden">
+    {photoUrl ? (
+      <img
+        src={photoUrl}
+        alt={`${store.name} storefront`}
+        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+        loading="lazy"
+      />
+    ) : (
+      <div class="w-full h-full flex items-center justify-center text-ink-400">
+        <svg class="w-12 h-12" viewBox="0 0 24 24" fill="currentColor">
+          <circle cx="12" cy="12" r="10" fill="currentColor" opacity="0.2"/>
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1" fill="none"/>
+          <circle cx="12" cy="12" r="4" fill="currentColor" opacity="0.4"/>
+          <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+        </svg>
+      </div>
+    )}
+  </div>
+
+  <!-- Content -->
+  <div class="p-4">
+    <div class="flex items-start justify-between gap-2">
+      <h3 class="font-display font-semibold text-ink-900 group-hover:text-groove-600 transition-colors line-clamp-1">
+        {store.name}
+      </h3>
+      {store.verified && (
+        <span class="shrink-0 text-groove-500" title="Verified listing">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+          </svg>
+        </span>
+      )}
+    </div>
+
+    <p class="mt-1 text-sm text-ink-500">
+      {store.city}, {store.state}
+    </p>
+
+    <!-- Genres -->
+    {store.genres && store.genres.length > 0 && (
+      <div class="mt-3 flex flex-wrap gap-1.5">
+        {store.genres.slice(0, 3).map((genre) => (
+          <span class="px-2 py-0.5 text-xs font-medium bg-label-100 text-label-700 rounded-full capitalize">
+            {genre.replace('-', '/')}
+          </span>
+        ))}
+        {store.genres.length > 3 && (
+          <span class="px-2 py-0.5 text-xs font-medium bg-ink-100 text-ink-500 rounded-full">
+            +{store.genres.length - 3}
+          </span>
+        )}
+      </div>
+    )}
+  </div>
+</a>

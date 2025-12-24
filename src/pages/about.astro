@@ -1,0 +1,60 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import siteConfig from '../data/site-config.json';
+---
+
+<BaseLayout
+  title="About"
+  description="Learn about RecordStores - the most comprehensive directory of independent record stores. Built for vinyl lovers, by vinyl lovers."
+>
+  <div class="container-page py-12 md:py-16">
+    <div class="max-w-3xl mx-auto">
+      <h1 class="font-display text-4xl md:text-5xl font-bold text-ink-900 mb-6">
+        About {siteConfig.name}
+      </h1>
+
+      <div class="prose prose-lg prose-ink max-w-none">
+        <p class="text-xl text-ink-600 mb-8">
+          We're building the most comprehensive directory of independent record stores because finding great vinyl shouldn't be hard.
+        </p>
+
+        <h2 class="font-display text-2xl font-bold text-ink-900 mt-12 mb-4">Our Mission</h2>
+        <p class="text-ink-700">
+          {siteConfig.name} exists to connect vinyl enthusiasts with independent record stores. Whether you're a seasoned crate digger looking for rare imports or a newcomer exploring your first record shop, we want to help you find stores that match your taste.
+        </p>
+
+        <h2 class="font-display text-2xl font-bold text-ink-900 mt-12 mb-4">What Makes Us Different</h2>
+        <ul class="space-y-3 text-ink-700">
+          <li class="flex gap-3">
+            <svg class="w-6 h-6 text-groove-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            <span><strong>Depth over breadth.</strong> We go beyond basic listings with genre specialties, store vibes, and features that matter to collectors.</span>
+          </li>
+          <li class="flex gap-3">
+            <svg class="w-6 h-6 text-groove-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            <span><strong>Community-driven.</strong> Our directory grows through submissions from collectors like you who know the best spots.</span>
+          </li>
+          <li class="flex gap-3">
+            <svg class="w-6 h-6 text-groove-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            <span><strong>Independent focus.</strong> We celebrate the small shops, the hidden gems, the places where owners know their stock.</span>
+          </li>
+        </ul>
+
+        <h2 class="font-display text-2xl font-bold text-ink-900 mt-12 mb-4">Help Us Grow</h2>
+        <p class="text-ink-700">
+          Know a great record store that's not in our directory? We'd love to hear about it. Every submission helps fellow collectors discover new places to explore.
+        </p>
+
+        <div class="mt-8 flex gap-4">
+          <a href="/submit" class="btn-primary">Submit a Store</a>
+          <a href="/contact" class="btn-secondary">Get in Touch</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>

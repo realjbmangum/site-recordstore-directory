@@ -1,0 +1,31 @@
+{
+  "name": "site-recordstore-directory",
+  "version": "1.0.0",
+  "description": "A comprehensive directory helping vinyl enthusiasts find independent record stores.",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/realjbmangum/site-recordstore-directory.git"
+  },
+  "keywords": [
+    "record-stores",
+    "vinyl",
+    "directory",
+    "music"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@astrojs/sitemap": "^3.6.0",
+    "@astrojs/tailwind": "^6.0.2",
+    "@supabase/supabase-js": "^2.89.0",
+    "astro": "^5.16.6",
+    "tailwindcss": "^3.4.0"
+  }
+}

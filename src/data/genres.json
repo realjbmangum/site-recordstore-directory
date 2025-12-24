@@ -1,0 +1,17 @@
+[
+  { "id": "rock", "label": "Rock" },
+  { "id": "jazz", "label": "Jazz" },
+  { "id": "hip-hop", "label": "Hip-Hop" },
+  { "id": "electronic", "label": "Electronic" },
+  { "id": "soul-rnb", "label": "Soul/R&B" },
+  { "id": "punk", "label": "Punk" },
+  { "id": "metal", "label": "Metal" },
+  { "id": "country", "label": "Country" },
+  { "id": "classical", "label": "Classical" },
+  { "id": "world", "label": "World" },
+  { "id": "indie", "label": "Indie" },
+  { "id": "experimental", "label": "Experimental" },
+  { "id": "reggae", "label": "Reggae" },
+  { "id": "folk", "label": "Folk" },
+  { "id": "blues", "label": "Blues" }
+]

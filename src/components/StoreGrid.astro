@@ -1,0 +1,29 @@
+---
+import type { Store } from '../lib/supabase';
+import StoreCard from './StoreCard.astro';
+
+interface Props {
+  stores: Store[];
+  emptyMessage?: string;
+}
+
+const { stores, emptyMessage = 'No stores found.' } = Astro.props;
+---
+
+{stores.length > 0 ? (
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    {stores.map((store) => (
+      <StoreCard store={store} />
+    ))}
+  </div>
+) : (
+  <div class="text-center py-12">
+    <svg class="w-16 h-16 mx-auto text-ink-300 mb-4" viewBox="0 0 24 24" fill="currentColor">
+      <circle cx="12" cy="12" r="10" fill="currentColor" opacity="0.1"/>
+      <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5" fill="none"/>
+      <circle cx="12" cy="12" r="4" fill="currentColor" opacity="0.3"/>
+      <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+    </svg>
+    <p class="text-ink-500">{emptyMessage}</p>
+  </div>
+)}

@@ -1,0 +1,152 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SearchBar from '../../components/SearchBar.astro';
+import StoreGrid from '../../components/StoreGrid.astro';
+import { getStores, getStatesWithCounts } from '../../lib/supabase';
+import { stateToSlug } from '../../lib/utils';
+import genres from '../../data/genres.json';
+
+// Get query params
+const url = Astro.url;
+const searchQuery = url.searchParams.get('q') || '';
+const selectedGenre = url.searchParams.get('genre') || '';
+const selectedState = url.searchParams.get('state') || '';
+
+// Fetch stores with filters
+const stores = await getStores({
+  genre: selectedGenre || undefined,
+  state: selectedState || undefined,
+  limit: 48,
+});
+
+// Get states for filter
+const statesWithCounts = await getStatesWithCounts();
+
+// Filter by search query on client-fetched data if needed
+const filteredStores = searchQuery
+  ? stores.filter(
+      (store) =>
+        store.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        store.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        store.state.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  : stores;
+
+const title = selectedState
+  ? `Record Stores in ${selectedState}`
+  : selectedGenre
+  ? `${genres.find((g) => g.id === selectedGenre)?.label || selectedGenre} Record Stores`
+  : 'Browse Record Stores';
+---
+
+<BaseLayout
+  title={title}
+  description={`Find independent record stores${selectedState ? ` in ${selectedState}` : ''}. Browse ${filteredStores.length} vinyl shops with detailed information about genres, features, and locations.`}
+>
+  <div class="container-page py-8 md:py-12">
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="font-display text-3xl md:text-4xl font-bold text-ink-900 mb-4">
+        {title}
+      </h1>
+      <p class="text-ink-600">
+        {filteredStores.length} stores found
+      </p>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-xl border border-ink-200 p-4 md:p-6 mb-8">
+      <div class="grid md:grid-cols-3 gap-4">
+        <!-- Search -->
+        <div>
+          <label class="block text-sm font-medium text-ink-700 mb-2">Search</label>
+          <SearchBar placeholder="Store name, city..." />
+        </div>
+
+        <!-- State Filter -->
+        <div>
+          <label class="block text-sm font-medium text-ink-700 mb-2">State</label>
+          <select
+            id="state-filter"
+            class="w-full h-12 px-4 rounded-lg border border-ink-300 bg-white text-ink-900 focus:outline-none focus:ring-2 focus:ring-groove-500"
+          >
+            <option value="">All States</option>
+            {statesWithCounts.map(({ state, count }) => (
+              <option value={state} selected={selectedState === state}>
+                {state} ({count})
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <!-- Genre Filter -->
+        <div>
+          <label class="block text-sm font-medium text-ink-700 mb-2">Genre</label>
+          <select
+            id="genre-filter"
+            class="w-full h-12 px-4 rounded-lg border border-ink-300 bg-white text-ink-900 focus:outline-none focus:ring-2 focus:ring-groove-500"
+          >
+            <option value="">All Genres</option>
+            {genres.map((genre) => (
+              <option value={genre.id} selected={selectedGenre === genre.id}>
+                {genre.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <StoreGrid
+      stores={filteredStores}
+      emptyMessage="No stores match your filters. Try adjusting your search."
+    />
+
+    <!-- Browse by State -->
+    {statesWithCounts.length > 0 && !selectedState && (
+      <div class="mt-12">
+        <h2 class="font-display text-xl font-bold text-ink-900 mb-4">
+          Browse by State
+        </h2>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+          {statesWithCounts.map(({ state, count }) => (
+            <a
+              href={`/stores/${stateToSlug(state)}`}
+              class="px-3 py-2 text-sm bg-ink-50 rounded-lg hover:bg-groove-50 hover:text-groove-700 transition-colors flex justify-between"
+            >
+              <span>{state}</span>
+              <span class="text-ink-400">{count}</span>
+            </a>
+          ))}
+        </div>
+      </div>
+    )}
+  </div>
+</BaseLayout>
+
+<script>
+  const stateFilter = document.getElementById('state-filter') as HTMLSelectElement;
+  const genreFilter = document.getElementById('genre-filter') as HTMLSelectElement;
+
+  function updateFilters() {
+    const url = new URL(window.location.href);
+
+    if (stateFilter.value) {
+      url.searchParams.set('state', stateFilter.value);
+    } else {
+      url.searchParams.delete('state');
+    }
+
+    if (genreFilter.value) {
+      url.searchParams.set('genre', genreFilter.value);
+    } else {
+      url.searchParams.delete('genre');
+    }
+
+    window.location.href = url.toString();
+  }
+
+  stateFilter?.addEventListener('change', updateFilters);
+  genreFilter?.addEventListener('change', updateFilters);
+</script>
